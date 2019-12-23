@@ -1,10 +1,10 @@
 package jsonrpc
 
 type Response struct {
-	JSONRPC string      `json:"jsonrpc"`
 	ID      ID          `json:"id,omitempty"`
 	Result  interface{} `json:"result,omitempty"`
 	Error   string      `json:"error,omitempty"`
+	JSONRPC string      `json:"jsonrpc"`
 }
 
 func newResponse(id ID, result interface{}) *Response {

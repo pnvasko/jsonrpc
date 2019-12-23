@@ -7,10 +7,10 @@ import (
 )
 
 type Request struct {
-	JSONRPC string     `json:"jsonrpc"`
 	ID      ID         `json:"id"`
 	Method  string     `json:"method"`
 	Params  *ParamsRaw `json:"params"`
+	JSONRPC string     `json:"jsonrpc"`
 }
 
 type (
