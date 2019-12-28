@@ -40,7 +40,7 @@ func callMethod(ctx context.Context, t interface{}, method *Method, req *Request
 	if method.paramsType != nil {
 		params, err := req.Params.ParseInto(method.paramsType)
 		if err != nil {
-			return newResponseError(req.ID, err)
+			return newResponseError(req.ID, err.Error())
 		}
 		log.Printf("req: %d %s %+v", req.ID, req.Method, params)
 
@@ -63,13 +63,16 @@ func callMethod(ctx context.Context, t interface{}, method *Method, req *Request
 	}
 
 	if err != nil {
-		return newResponseError(req.ID, err)
+		if userErr, ok := err.(interface{ UserError() string }); ok {
+			return newResponse(req.ID, userErr.UserError())
+		}
+		return newResponseError(req.ID, err.Error())
 	}
 	return newResponse(req.ID, result)
 }
 
 func handleNotFound(req *Request) *Response {
-	rsp := newResponseError(req.ID, fmt.Errorf("method not found: %s", req.Method))
+	rsp := newResponseError(req.ID, fmt.Errorf("method not found: %s", req.Method).Error())
 	log.Printf("rsp error: %s", rsp.Error)
 	return rsp
 }
@@ -79,7 +82,7 @@ func handlePanic(req *Request, responses chan<- *Response) {
 	if errish == nil {
 		return
 	}
-	rsp := newResponseError(req.ID, errors.New("internal server error"))
+	rsp := newResponseError(req.ID, errors.New("internal server error").Error())
 	log.Printf("%+v", errish)
 
 	// TODO: hide error in production

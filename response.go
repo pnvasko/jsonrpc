@@ -20,10 +20,10 @@ func newResponse(id ID, result interface{}) *Response {
 	}
 }
 
-func newResponseError(id ID, err error) *Response {
+func newResponseError(id ID, err string) *Response {
 	return &Response{
 		ID:      id,
-		Error:   err.Error(),
+		Error:   err,
 		JSONRPC: "2.0",
 	}
 }
