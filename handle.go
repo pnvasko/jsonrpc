@@ -14,25 +14,6 @@ type Socket interface {
 	Close() error
 }
 
-func (j *JSONRPC) Handle(ctx context.Context, sock Socket) {
-	defer sock.Close()
-	responses := make(chan *Response)
-	defer close(responses)
-	go writeResponses(sock, responses)
-	for req := range readRequests(sock) {
-		go func(req *Request) {
-			defer handlePanic(req, responses)
-
-			method := j.methods[req.Method]
-			if method == nil {
-				responses <- handleNotFound(req)
-				return
-			}
-			responses <- callMethod(ctx, j.t, method, req)
-		}(req)
-	}
-}
-
 func readRequests(sock Socket) <-chan *Request {
 	requestChan := make(chan *Request)
 	go func() {
@@ -50,7 +31,7 @@ func readRequests(sock Socket) <-chan *Request {
 	return requestChan
 }
 
-func callMethod(ctx context.Context, t interface{}, method *method, req *Request) *Response {
+func callMethod(ctx context.Context, t interface{}, method *Method, req *Request) *Response {
 	in := []reflect.Value{
 		reflect.ValueOf(t),
 		reflect.ValueOf(ctx),

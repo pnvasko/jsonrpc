@@ -11,6 +11,8 @@ import (
 	"github.com/jdxcode/jsonrpc"
 )
 
+var rpc = jsonrpc.New(&TestRPC{})
+
 func TestHandleString(t *testing.T) {
 	assert := assert.New(t)
 	sock := newFakeSocket()
@@ -23,8 +25,7 @@ func TestHandleString(t *testing.T) {
 		assert.Equal(123, rsp.Result)
 		assert.Empty(rsp.Error)
 	}()
-	rpc := jsonrpc.New(&TestRPC{})
-	rpc.Handle(ctx, sock)
+	rpc.NewSession(&TestRPC{}, sock).HandleRequests(ctx)
 }
 
 func TestHandleStruct(t *testing.T) {
@@ -40,8 +41,7 @@ func TestHandleStruct(t *testing.T) {
 		assert.Equal("test-abc", result.Bar)
 		assert.Empty(rsp.Error)
 	}()
-	rpc := jsonrpc.New(&TestRPC{})
-	rpc.Handle(ctx, sock)
+	rpc.NewSession(&TestRPC{}, sock).HandleRequests(ctx)
 }
 
 func TestHandleErr(t *testing.T) {
@@ -56,8 +56,7 @@ func TestHandleErr(t *testing.T) {
 		assert.Nil(rsp.Result)
 		assert.Equal("uh oh", rsp.Error)
 	}()
-	rpc := jsonrpc.New(&TestRPC{})
-	rpc.Handle(ctx, sock)
+	rpc.NewSession(&TestRPC{}, sock).HandleRequests(ctx)
 }
 
 func TestHandlePanic(t *testing.T) {
@@ -71,8 +70,7 @@ func TestHandlePanic(t *testing.T) {
 		assert.Nil(rsp.Result)
 		assert.Equal("uh oh", rsp.Error)
 	}()
-	rpc := jsonrpc.New(&TestRPC{})
-	rpc.Handle(ctx, sock)
+	rpc.NewSession(&TestRPC{}, sock).HandleRequests(ctx)
 }
 
 func TestMethodNotFound(t *testing.T) {
@@ -86,8 +84,7 @@ func TestMethodNotFound(t *testing.T) {
 		assert.Equal("method not found: invalid_method", rsp.Error)
 		close(sock.requests)
 	}()
-	rpc := jsonrpc.New(&TestRPC{})
-	rpc.Handle(ctx, sock)
+	rpc.NewSession(&TestRPC{}, sock).HandleRequests(ctx)
 }
 
 type FakeSocket struct {

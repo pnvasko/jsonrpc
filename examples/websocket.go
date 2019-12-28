@@ -23,7 +23,7 @@ func main() {
 			return
 		}
 		ctx := r.Context()
-		rpc.Handle(ctx, conn)
+		rpc.NewSession(&RPC{}, conn).HandleRequests(ctx)
 	})
 
 	if err := http.ListenAndServe(PORT, nil); err != nil {
