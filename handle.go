@@ -64,7 +64,7 @@ func callMethod(ctx context.Context, t interface{}, method *Method, req *Request
 
 	if err != nil {
 		if userErr, ok := err.(interface{ UserError() string }); ok {
-			return newResponse(req.ID, userErr.UserError())
+			return newResponseError(req.ID, userErr.UserError())
 		}
 		return newResponseError(req.ID, err.Error())
 	}
