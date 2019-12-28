@@ -9,16 +9,16 @@ type Response struct {
 
 func newResponse(id ID, result interface{}) *Response {
 	return &Response{
-		JSONRPC: "2.0",
 		ID:      id,
 		Result:  result,
+		JSONRPC: "2.0",
 	}
 }
 
 func newResponseError(id ID, err error) *Response {
 	return &Response{
-		JSONRPC: "2.0",
 		ID:      id,
 		Error:   err.Error(),
+		JSONRPC: "2.0",
 	}
 }
