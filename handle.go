@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"log"
 	"reflect"
+	"runtime/debug"
 )
 
 type Socket interface {
@@ -113,6 +114,7 @@ func writeResponses(sock Socket, responses <-chan *Response) {
 		} else {
 			log.Printf("rsp: %d", rsp.ID)
 		}
+		debug.PrintStack()
 		if err := sock.WriteJSON(rsp); err != nil {
 			log.Println(err)
 		}
