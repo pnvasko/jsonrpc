@@ -83,6 +83,7 @@ func handlePanic(req *Request, responses chan<- *Response) {
 	if errish == nil {
 		return
 	}
+	debug.PrintStack()
 	rsp := newResponseError(req.ID, errors.New("internal server error").Error())
 	log.Printf("%+v", errish)
 
@@ -114,7 +115,6 @@ func writeResponses(sock Socket, responses <-chan *Response) {
 		} else {
 			log.Printf("rsp: %d", rsp.ID)
 		}
-		debug.PrintStack()
 		if err := sock.WriteJSON(rsp); err != nil {
 			log.Println(err)
 		}
