@@ -1,5 +1,9 @@
 package jsonrpc
 
+import (
+	"log"
+)
+
 type Response struct {
 	ID     ID          `json:"id,omitempty"`
 	Result interface{} `json:"result,omitempty"`
@@ -33,5 +37,18 @@ func newResponseNotification(method string, params interface{}) *Response {
 		Method:  method,
 		Params:  params,
 		JSONRPC: "2.0",
+	}
+}
+
+func writeResponses(sock Socket, responses <-chan *Response) {
+	for rsp := range responses {
+		if rsp.Error != "" {
+			log.Printf("rsp error: %d %s", rsp.ID, rsp.Error)
+		} else {
+			log.Printf("rsp: %d", rsp.ID)
+		}
+		if err := sock.WriteJSON(rsp); err != nil {
+			log.Println(err)
+		}
 	}
 }

@@ -1,11 +1,21 @@
 package jsonrpc
 
 import (
+	"io"
 	"reflect"
 )
 
 type Server struct {
-	methods Methods
+	methods       Methods
+	rcvr          interface{}
+	afterConnect  afterConnectFN
+	beforeRequest beforeRequestFN
+}
+
+type Socket interface {
+	io.Closer
+	ReadJSON(interface{}) error
+	WriteJSON(interface{}) error
 }
 
 func New(sampleMethodReceiver interface{}) *Server {
@@ -23,17 +33,9 @@ func New(sampleMethodReceiver interface{}) *Server {
 	}
 
 	return &Server{
-		methods: methods,
-	}
-}
-
-func (s *Server) NewSession(rcvr interface{}, sock Socket) *Session {
-	responses := make(chan *Response)
-	go writeResponses(sock, responses)
-	return &Session{
-		rcvr:      rcvr,
-		sock:      sock,
-		methods:   s.methods,
-		responses: responses,
+		methods:       methods,
+		rcvr:          sampleMethodReceiver,
+		afterConnect:  getAfterConnect(sampleMethodReceiver),
+		beforeRequest: getBeforeRequest(sampleMethodReceiver),
 	}
 }

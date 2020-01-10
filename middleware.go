@@ -4,15 +4,20 @@ import (
 	"context"
 )
 
+type afterConnectFN = func(ctx context.Context) (context.Context, error)
+
 type AfterConnect interface {
 	AfterConnect(ctx context.Context) (context.Context, error)
 }
 
-type BeforeRequest interface {
-	BeforeRequest(ctx context.Context, method string, params interface{}) (context.Context, error)
-}
+type (
+	beforeRequestFN = func(ctx context.Context, method string, params interface{}) (context.Context, error)
+	BeforeRequest   interface {
+		BeforeRequest(ctx context.Context, method string, params interface{}) (context.Context, error)
+	}
+)
 
-func getAfterConnect(rcvr interface{}) func(ctx context.Context) (context.Context, error) {
+func getAfterConnect(rcvr interface{}) afterConnectFN {
 	r, ok := rcvr.(AfterConnect)
 	if !ok {
 		return afterConnectNoop
@@ -24,8 +29,7 @@ func afterConnectNoop(ctx context.Context) (context.Context, error) {
 	return ctx, nil
 }
 
-func getBeforeMiddleware(rcvr interface{}) func(
-	ctx context.Context, method string, params interface{}) (context.Context, error) {
+func getBeforeRequest(rcvr interface{}) beforeRequestFN {
 	r, ok := rcvr.(BeforeRequest)
 	if !ok {
 		return beforeRequestNoop

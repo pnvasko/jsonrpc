@@ -25,7 +25,7 @@ func TestHandleString(t *testing.T) {
 		assert.Equal(123, rsp.Result)
 		assert.Empty(rsp.Error)
 	}()
-	rpc.NewSession(&TestRPC{}, sock).HandleRequests(ctx)
+	rpc.Handle(ctx, sock)
 }
 
 func TestHandleStruct(t *testing.T) {
@@ -41,7 +41,7 @@ func TestHandleStruct(t *testing.T) {
 		assert.Equal("test-abc", result.Bar)
 		assert.Empty(rsp.Error)
 	}()
-	rpc.NewSession(&TestRPC{}, sock).HandleRequests(ctx)
+	rpc.Handle(ctx, sock)
 }
 
 func TestHandleErr(t *testing.T) {
@@ -56,7 +56,7 @@ func TestHandleErr(t *testing.T) {
 		assert.Nil(rsp.Result)
 		assert.Equal("uh oh", rsp.Error)
 	}()
-	rpc.NewSession(&TestRPC{}, sock).HandleRequests(ctx)
+	rpc.Handle(ctx, sock)
 }
 
 func TestHandlePanic(t *testing.T) {
@@ -70,7 +70,7 @@ func TestHandlePanic(t *testing.T) {
 		assert.Nil(rsp.Result)
 		assert.Equal("uh oh", rsp.Error)
 	}()
-	rpc.NewSession(&TestRPC{}, sock).HandleRequests(ctx)
+	rpc.Handle(ctx, sock)
 }
 
 func TestMethodNotFound(t *testing.T) {
@@ -84,7 +84,7 @@ func TestMethodNotFound(t *testing.T) {
 		assert.Equal("method not found: invalid_method", rsp.Error)
 		close(sock.requests)
 	}()
-	rpc.NewSession(&TestRPC{}, sock).HandleRequests(ctx)
+	rpc.Handle(ctx, sock)
 }
 
 type FakeSocket struct {
