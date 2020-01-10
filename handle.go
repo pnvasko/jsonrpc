@@ -41,7 +41,7 @@ func (s *Server) Handle(ctx context.Context, sock Socket) {
 			}
 			log.Printf("req: %d %s %+v", req.ID, req.Method, params)
 
-			ctx, err = s.beforeRequest(ctx, req.Method, req.Params)
+			ctx, err = s.beforeRequest(ctx, req.Method, params)
 			if err != nil {
 				responses <- newResponseError(req.ID, err.Error())
 				return
