@@ -14,7 +14,17 @@ type Session struct {
 
 func (s *Session) HandleRequests(ctx context.Context) {
 	defer s.Close()
+
+	afterConnectMiddleware := getAfterConnect(s.rcvr)
 	beforeMiddleware := getBeforeMiddleware(s.rcvr)
+
+	var err error
+	ctx, err = afterConnectMiddleware(ctx)
+	if err != nil {
+		s.responses <- newResponseNotification("error", err.Error())
+		return
+	}
+
 	for req := range readRequests(s.sock) {
 		go func(req *Request) {
 			defer handlePanic(req, s.responses)
