@@ -2,23 +2,27 @@ package jsonrpc
 
 import (
 	"context"
-	"log"
 	"reflect"
 )
 
-func callMethod(ctx context.Context, t interface{}, method *Method, req *Request) *Response {
+func convertParams(method *Method, req *Request) (interface{}, error) {
+	if method.paramsType == nil {
+		return nil, nil
+	}
+	params, err := req.Params.ParseInto(method.paramsType)
+	if err != nil {
+		return nil, err
+	}
+	return params, nil
+}
+
+func callMethod(ctx context.Context, t interface{}, method *Method, req *Request, params interface{}) *Response {
 	in := []reflect.Value{
 		reflect.ValueOf(t),
 		reflect.ValueOf(ctx),
 	}
 
 	if method.paramsType != nil {
-		params, err := req.Params.ParseInto(method.paramsType)
-		if err != nil {
-			return newResponseError(req.ID, err.Error())
-		}
-		log.Printf("req: %d %s %+v", req.ID, req.Method, params)
-
 		in = append(in, reflect.ValueOf(params))
 	}
 

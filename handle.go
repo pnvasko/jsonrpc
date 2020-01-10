@@ -26,23 +26,28 @@ func (s *Server) Handle(ctx context.Context, sock Socket) {
 	for req := range readRequests(ctx, sock) {
 		wg.Add(1)
 		go func(req *Request) {
+			var err error
 			defer wg.Done()
 			defer handlePanic(req, responses)
-
-			var err error
-			ctx, err = s.beforeRequest(ctx, req.Method, req.Params)
-			if err != nil {
-				responses <- newResponseError(req.ID, err.Error())
-				wg.Done()
-				return
-			}
 
 			method := s.methods[req.Method]
 			if method == nil {
 				responses <- handleNotFound(req)
 				return
 			}
-			responses <- callMethod(ctx, s.rcvr, method, req)
+			params, err := convertParams(method, req)
+			if err != nil {
+				responses <- newResponseError(req.ID, err.Error())
+			}
+			log.Printf("req: %d %s %+v", req.ID, req.Method, params)
+
+			ctx, err = s.beforeRequest(ctx, req.Method, req.Params)
+			if err != nil {
+				responses <- newResponseError(req.ID, err.Error())
+				return
+			}
+
+			responses <- callMethod(ctx, s.rcvr, method, req, params)
 		}(req)
 	}
 }
