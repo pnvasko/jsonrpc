@@ -14,6 +14,7 @@ type Session struct {
 
 func (s *Session) HandleRequests(ctx context.Context) {
 	defer s.Close()
+	beforeMiddleware := getBeforeMiddleware(s.rcvr)
 	for req := range readRequests(s.sock) {
 		go func(req *Request) {
 			defer handlePanic(req, s.responses)
@@ -21,6 +22,12 @@ func (s *Session) HandleRequests(ctx context.Context) {
 			method := s.methods[req.Method]
 			if method == nil {
 				s.responses <- handleNotFound(req)
+				return
+			}
+			var err error
+			ctx, err = beforeMiddleware(ctx, req.Method, req.Params)
+			if err != nil {
+				s.responses <- newResponseError(req.ID, err.Error())
 				return
 			}
 			s.responses <- callMethod(ctx, s.rcvr, method, req)
