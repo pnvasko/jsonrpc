@@ -25,31 +25,26 @@ func (s *Server) Handle(ctx context.Context, sock Socket) {
 
 	for req := range readRequests(ctx, sock) {
 		wg.Add(1)
+		go func(req *Request) {
+			defer wg.Done()
+			defer handlePanic(req, responses)
 
-		var err error
-		ctx, err = s.beforeRequest(ctx, req.Method, req.Params)
-		if err != nil {
-			responses <- newResponseError(req.ID, err.Error())
-			wg.Done()
-			return
-		}
+			var err error
+			ctx, err = s.beforeRequest(ctx, req.Method, req.Params)
+			if err != nil {
+				responses <- newResponseError(req.ID, err.Error())
+				wg.Done()
+				return
+			}
 
-		go dispatch(ctx, s.rcvr, req, responses, s.methods, &wg)
+			method := s.methods[req.Method]
+			if method == nil {
+				responses <- handleNotFound(req)
+				return
+			}
+			responses <- callMethod(ctx, s.rcvr, method, req)
+		}(req)
 	}
-}
-
-func dispatch(
-	ctx context.Context, rcvr interface{}, req *Request, responses chan<- *Response,
-	methods Methods, wg *sync.WaitGroup) {
-	defer wg.Done()
-	defer handlePanic(req, responses)
-
-	method := methods[req.Method]
-	if method == nil {
-		responses <- handleNotFound(req)
-		return
-	}
-	responses <- callMethod(ctx, rcvr, method, req)
 }
 
 func handleNotFound(req *Request) *Response {
