@@ -23,7 +23,7 @@ func newResponse(id ID, result interface{}) *Response {
 		JSONRPC: "2.0",
 	}
 }
-
+// TODO make by standart
 func newResponseError(id ID, err string) *Response {
 	return &Response{
 		ID:      id,

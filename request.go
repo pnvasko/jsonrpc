@@ -56,6 +56,7 @@ func readRequests(ctx context.Context, sock Socket) <-chan *Request {
 			}
 		}
 	}()
+
 	return requests
 }
 
